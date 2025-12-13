@@ -2,6 +2,9 @@ const express = require('express');
 const router = express.Router();
 const { cache } = require('../middleware/memoryManager');
 
+// Límites de contenido para optimización de memoria
+const MAX_CONTENT_SIZE = 50000; // 50KB de texto
+
 /**
  * POST /api/summaries/generate
  * Generar resumen automático usando IA
@@ -11,9 +14,6 @@ router.post('/generate', async (req, res) => {
   try {
     const { content, options = {} } = req.body;
     const userId = req.user?.id || 'demo-user';
-
-    // Validación de tamaño de contenido
-    const MAX_CONTENT_SIZE = 50000; // 50KB de texto
     if (content.length > MAX_CONTENT_SIZE) {
       return res.status(400).json({
         error: 'El contenido es demasiado largo. Máximo 50,000 caracteres.'
@@ -152,6 +152,12 @@ router.get('/', async (req, res) => {
 
 /**
  * Helper: Generar resumen con IA (simulado)
+ * @param {string} content - Contenido de texto a resumir
+ * @param {Object} options - Opciones de configuración del resumen
+ * @param {string} options.length - Longitud del resumen: 'brief' (200 palabras) o 'detailed' (500 palabras)
+ * @param {boolean} options.includeKeyPoints - Si incluir puntos clave extraídos
+ * @param {boolean} options.generateQuestions - Si generar preguntas de estudio
+ * @returns {Promise<Object>} Objeto con resumen, puntos clave y preguntas opcionales
  */
 async function generateAISummary(content, options) {
   const {

@@ -3,6 +3,11 @@ const router = express.Router();
 const { cache, autoPaginate } = require('../middleware/memoryManager');
 
 /**
+ * Helper para generar cache key consistente para listas de recordatorios
+ */
+const getCacheKey = (userId, page, limit) => `reminders:${userId}:${page}:${limit}`;
+
+/**
  * GET /api/reminders
  * Obtener todos los recordatorios del usuario
  * Implementa paginación y caché para optimizar memoria
@@ -13,7 +18,7 @@ router.get('/', autoPaginate, async (req, res) => {
     const { page, limit, offset } = req.pagination;
     
     // Intentar obtener de cache
-    const cacheKey = `reminders:${userId}:${page}:${limit}`;
+    const cacheKey = getCacheKey(userId, page, limit);
     const cached = cache.get(cacheKey);
     
     if (cached) {
@@ -128,8 +133,8 @@ router.post('/', async (req, res) => {
       createdAt: new Date().toISOString()
     };
 
-    // Invalidar cache de lista
-    cache.delete(`reminders:${userId}:1:20`);
+    // Invalidar cache de lista (página 1 con límite default)
+    cache.delete(getCacheKey(userId, 1, 20));
 
     res.status(201).json({
       message: 'Recordatorio creado exitosamente',
@@ -160,7 +165,7 @@ router.put('/:id', async (req, res) => {
 
     // Invalidar caches relacionados
     cache.delete(`reminder:${userId}:${id}`);
-    cache.delete(`reminders:${userId}:1:20`);
+    cache.delete(getCacheKey(userId, 1, 20));
 
     res.json({
       message: 'Recordatorio actualizado exitosamente',
@@ -211,7 +216,7 @@ router.patch('/:id/complete', async (req, res) => {
 
     // Invalidar caches
     cache.delete(`reminder:${userId}:${id}`);
-    cache.delete(`reminders:${userId}:1:20`);
+    cache.delete(getCacheKey(userId, 1, 20));
 
     res.json({
       message: 'Recordatorio marcado como completado',

@@ -158,6 +158,16 @@ function streamLargeData(data, res) {
 /**
  * Pool de conexiones para base de datos
  * Reutilización de conexiones para eficiencia de memoria
+ * 
+ * @class ConnectionPool
+ * @description Gestiona un pool de conexiones reutilizables para optimizar memoria
+ * @param {number} maxConnections - Número máximo de conexiones en el pool (default: 10)
+ * 
+ * @example
+ * const pool = new ConnectionPool(10);
+ * const conn = await pool.acquire();
+ * // usar conexión
+ * pool.release(conn);
  */
 class ConnectionPool {
   constructor(maxConnections = 10) {
